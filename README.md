@@ -37,11 +37,11 @@ If you want to use a different port than the default one, you can set the enviro
 - V1
   - [x] Crawl the page
   - [x] Have an interactive map
-  - [ ] Have a zoom on the map for small screen
+  - [x] Have a zoom on the map for small screen
   - [ ] Improve the css
-  - [ ] Have an interactive list of the inhabitants of the island
-    - [ ] Have a list
-    - [ ] Make it interactive
+  - [x] Have an interactive list of the inhabitants of the island
+    - [x] Have a list
+    - [x] Make it interactive
 - V2
   - [ ] Display craft an magic parts
     - [ ] Craft part

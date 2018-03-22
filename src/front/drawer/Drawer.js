@@ -1,6 +1,7 @@
 import Images from './Images'
+import Zoomer from './Zoomer'
 
-class Point {
+export class Point {
   constructor(x, y) {
     this.x = x
     this.y = y
@@ -37,10 +38,10 @@ export default class Drawer{
    * fontSize is in px
    */
   drawTextBoxed(posX, posY, text, textColor, boxColor, fontSize=12, fontStyle="monospace") {
+    this.ctx.font = `${fontSize}px ${fontStyle}`
     const measure = this.ctx.measureText(text)
     this.ctx.fillStyle = boxColor
     this.ctx.fillRect(posX - 2, posY - 2 - fontSize, measure.width + 4, fontSize + 4)
-    this.ctx.font = `${fontSize}px ${fontStyle}`
     this.drawText(posX, posY, text, textColor)
   }
 
@@ -99,8 +100,8 @@ export default class Drawer{
       image.height,
       posX,
       posY,
-      width,
-      height
+      image.width,
+      image.height
     )
   }
 

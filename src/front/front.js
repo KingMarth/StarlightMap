@@ -1,16 +1,22 @@
 import Drawer from './drawer/Drawer'
 import Images from './drawer/Images'
+import Zoomer from './drawer/Zoomer'
 import Hexagon from './hexagon/hexagon'
 
 import Requests from './init.js'
 
+const MAP_WIDTH = 962
+const MAP_HEIGHT = 924
 
 const canvas = document.querySelector("canvas#map")
 
+const zoomer = new Zoomer(MAP_WIDTH, MAP_HEIGHT)
 const drawer = new Drawer(canvas);
 const markmap = new Images()
 const blankmap = new Images();
 let map = markmap;
+let clicked = false;
+let mousepos = {x: 0, y: 0}
 
 const data = document.querySelector("div#data")
 const dataBlueprint = document.querySelector("div.data")
@@ -27,10 +33,24 @@ const tableDetails = document.querySelector('table#resourceDetails')
 
 const hexagons = []
 
-function translateCoordinate (x, y) {
+
+const factorWidth = () => map.width /canvas.clientWidth / zoomer.scale
+const factorHeight = () => map.height /canvas.clientHeight / zoomer.scale
+
+function zoomOffset() {
+/* A bit complicate math to translate the coordinate from the scale */
   return {
-    x: map.width/canvas.clientWidth * x,
-    y: map.height/canvas.clientHeight * y
+    x: map.width / 2 + zoomer.offsetX / zoomer.scale - canvas.clientWidth * factorWidth() / 2,
+    y: map.height / 2 + zoomer.offsetY / zoomer.scale - canvas.clientHeight * factorHeight() / 2
+  }
+}
+
+function translateCoordinate (x, y) {
+  const posx = factorWidth() * x + zoomOffset().x
+  const posy = factorHeight() * y + zoomOffset().y
+  return {
+    x:  posx,
+    y:  posy
   }
 }
 
@@ -64,9 +84,8 @@ function getSurvivors(x,y) {
       card.addEventListener('click', e => {
         let hexa = hexagons.find(hexa => hexa.coord.x === inhab.Position.x && hexa.coord.y === inhab.Position.y)
         if(hexa) {
-          drawer.clean()
-          drawer.drawImageScale(0,0,1,map)
-          hexa.draw(drawer)
+          drawMap(map)
+          hexa.draw(drawer, zoomer, zoomOffset())
         }
       })
       data.append(card)
@@ -80,10 +99,10 @@ function drawMap(m) {
   map = m;
   drawer.setSize(map.width, map.height);
   drawer.clean();
-  drawer.drawImageScale(0,0,1,map);
+  zoomer.drawZoomed((x, y, scale) => drawer.drawImageScale(x,y, scale ,map), 0, 0);
 }
 
-markmap.load('/map', 962, 924, 0, 0).then(_ => {
+markmap.load('/map', MAP_WIDTH, MAP_HEIGHT, 0, 0).then(_ => {
   drawMap(markmap);
 
   fetchMetadata().then(metadata => {
@@ -105,10 +124,20 @@ markmap.load('/map', 962, 924, 0, 0).then(_ => {
 
       let hexa = hexagons.find(h => h.isIn(x, y))
       if(hexa) {
-        drawer.clean()
-        drawer.drawImageScale(0,0,1,map)
-        hexa.draw(drawer)
+        drawMap(map)
+        hexa.draw(drawer, zoomer, zoomOffset())
       }
+
+      if(clicked) {
+        zoomer.moveZoom(-e.movementX, -e.movementY)
+        drawMap(map)
+      }
+    })
+
+    canvas.addEventListener('wheel', e => {
+      zoomer.zoom(-e.deltaY / 1000)
+      e.preventDefault()
+      drawMap(map)
     })
 
     canvas.addEventListener('touchstart', e => {
@@ -125,9 +154,8 @@ markmap.load('/map', 962, 924, 0, 0).then(_ => {
 
       let hexa = hexagons.find(h => h.isIn(x, y))
       if(hexa) {
-        drawer.clean()
-        drawer.drawImageScale(0,0,1,map)
-        hexa.draw(drawer, 80 + touch.radiusY)
+        drawMap(map)
+        hexa.draw(drawer, zoomer, zoomOffset(), 80 + touch.radiusY)
       }
     })
 
@@ -139,9 +167,8 @@ markmap.load('/map', 962, 924, 0, 0).then(_ => {
 
       let hexa = hexagons.find(h => h.isIn(x, y))
       if(hexa) {
-        drawer.clean()
-        drawer.drawImageScale(0,0,1,map)
-        hexa.draw(drawer)
+        drawMap(map)
+        hexa.draw(drawer, zoomer, zoomOffset())
         getSurvivors(hexa.coord.x, hexa.coord.y)
       }
     })
@@ -152,20 +179,24 @@ markmap.load('/map', 962, 924, 0, 0).then(_ => {
         getSurvivors(hexa.coord.x, hexa.coord.y)
       }
     })
+
+    canvas.addEventListener('mousedown', e => clicked = true)
+    canvas.addEventListener('mouseup', e => clicked = false)
+    canvas.addEventListener('mouseout', e => clicked = false)
   })
 
   markButton.addEventListener('click', e => {
     drawMap(markmap);
-    markButton.className = "current";
-    blankButton.className = "";
+    markButton.classList.add('current');
+    blankButton.classList.remove('current');
   });
 }, e => console.error(e));
 
 blankmap.load('/blankmap', 962, 924, 0, 0).then(_ => {
   blankButton.addEventListener('click', e => {
     drawMap(blankmap);
-    markButton.className = "";
-    blankButton.className = "current";
+    markButton.classList.remove('current');
+    blankButton.classList.add('current');
   });
 }, e => console.error(e));
 
@@ -173,14 +204,14 @@ fetch(Requests.StatsRequest()).then(d => d.json()).then(d => {
 
   for (const resource in d) {
     const rescount = table.insertRow()
-    rescount.className = "resourceCounts"
+    rescount.classList.add('resourceCounts')
     const name = rescount.insertCell()
-    name.className = "resourceCounts"
+    name.classList.add('resourceCounts')
     name.appendChild(document.createTextNode(`${resource}`))
 
     const count = rescount.insertCell()
     count.appendChild(document.createTextNode(`${d[resource]}`))
-    count.className = "resourceCounts"
+    count.classList.add('resourceCounts')
 
     rescount.addEventListener('click', e => {
       fetch(Requests.DetailsRequest(resource)).then(f => f.json()).then(details => {
@@ -204,7 +235,7 @@ fetch(Requests.StatsRequest()).then(d => d.json()).then(d => {
             `(${detail[1]},${detail[2]})`))
             surPos.addEventListener('click',
             e => getSurvivors(detail[1],detail[2]))
-            surPos.className = "location"
+            surPos.classList.add('location')
 
             const surCount = row.insertCell()
             surCount.appendChild(document.createTextNode(`${detail[3]}`))

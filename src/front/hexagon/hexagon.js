@@ -25,11 +25,16 @@ export default class Hexagon {
     return this.active;
   }
 
-  draw(drawer, labelOffset) {
+  draw(drawer, zoomer, offset, labelOffset) {
     if (!labelOffset) labelOffset = 0
-    drawer.drawHexagon(this.pos.x, this.pos.y, this.size.x, this.color)
-    drawer.drawTextBoxed(this.pos.x - this.size.x,
-                         this.pos.y - this.size.y - 2 - labelOffset,
+    drawer.drawHexagon(
+      (this.pos.x - offset.x) * zoomer.scale,
+      (this.pos.y - offset.y) * zoomer.scale,
+      this.size.x * zoomer.scale,
+      this.color
+    )
+    drawer.drawTextBoxed((this.pos.x - offset.x) * zoomer.scale - this.size.x,
+                         (this.pos.y - offset.y) * zoomer.scale - this.size.y - 2 - labelOffset,
                          `${this.coord.x}, ${this.coord.y}`,
                          this.color, "#000000")
   }
