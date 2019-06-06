@@ -174,19 +174,35 @@ inputSearch.addEventListener('change', (e) => {
   
 })
 
+function has(pairlist, pair) {
+  console.log(pair);
+  for(let ii = 0; ii < pairlist.length; ++ii) {
+    if (pairlist[ii][0] === pair[0] && pairlist[ii][1] === pair[1]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 markmap.load('/map', MAP_WIDTH, MAP_HEIGHT, 0, 0).then(_ => {
   drawMap(markmap);
 
   fetchMetadata().then(metadata => {
     for(let row = 1; row <= 71; row++) {
+      let skip = 0;
       for(let col = 0; col < metadata["row-length"][`${row}`]; col++) {
+        if (has(metadata["special"], [row, col+1])) {
+          console.log(`skip ${row},${col}`);
+          skip++;
+          continue;
+        }
         hexagons.push(new Hexagon(
           metadata["left-offset"][`${row}`] + col * metadata["horizontal-step"],
           metadata["bottom-offset"] + row * metadata["vertical-step"] - Math.round(metadata["flatten"] * row),
           10,
           10,
           row,
-          col+1,
+          col+1-skip,
         ))
       }
     }
