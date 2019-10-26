@@ -18,9 +18,7 @@
     "nightmare": "^3.0.0",
     "request": "^2.88.0",
     "winston": "^3.1.0",
-    "winston-transport-browserconsole": "0.0.3"
-  },
-  "devDependencies": {
+    "winston-transport-browserconsole": "0.0.3",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-plugin-transform-builtin-classes": "^0.6.1",
@@ -32,6 +30,8 @@
     "typescript": "^3.3.4000",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.2"
+  },
+  "devDependencies": {
   },
   "repository": {
     "type": "git",

@@ -1,3 +1,4 @@
 [submodule "starlight-front"]
 	path = starlight-front
-	url = https://github.com/leonard-IMBERT/starlight-front.git
+	url = https://github.com/KingMarth/starlight-front.git
+	branch = heroku
