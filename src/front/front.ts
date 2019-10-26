@@ -11,7 +11,6 @@ const canvas = document.querySelector<HTMLCanvasElement>('canvas#map');
 const markmap = new Images();
 const blankmap = new Images();
 
-const starmap = new StarMap(canvas);
 
 const data = document.querySelector<HTMLDivElement>('div#data');
 const dataButton = document.querySelector<HTMLButtonElement>('button#dataButton');
@@ -90,6 +89,7 @@ function getSurvivors(point?: { x: number, y: number }) {
       });
     }));
 }
+const starmap = new StarMap(canvas, getSurvivors);
 
 dataButton.addEventListener('click', () => getSurvivors());
 

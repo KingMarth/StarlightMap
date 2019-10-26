@@ -18,14 +18,16 @@ class StarMap {
   private metadata: Metadata
   private clicked: boolean = false;
   private hexagons: Hexagon[] = [];
+  private callback: Function;
 
   public static readonly MAP_WIDTH = 962;
   public static readonly MAP_HEIGHT = 924;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, callback: Function) {
     this.drawer = new Drawer(canvas);
     this.zoomer = new Zoomer(StarMap.MAP_WIDTH, StarMap.MAP_HEIGHT);
     this.canvas = canvas;
+    this.callback = callback;
     this.init();
   }
 
@@ -181,7 +183,10 @@ class StarMap {
     }
 
     this.hexagons.forEach(h => {
-      if(h.isIn(pos.x, pos.y)) h.select = true;
+      if(h.isIn(pos.x, pos.y)) {
+        h.select = true;
+        this.callback(h.coord);
+      }
       else h.select = false;
     })
 
