@@ -30,12 +30,13 @@
     "request": "^2.88.0",
     "ts-loader": "^5.3.3",
     "typescript": "^3.3.4000",
-    "webpack": "^4.29.6",
-    "webpack-cli": "^3.3.2",
     "winston": "^3.1.0",
     "winston-transport-browserconsole": "0.0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.2"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/leonard-IMBERT/StarlightMap.git"
