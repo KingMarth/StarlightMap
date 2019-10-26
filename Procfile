@@ -1,0 +1,1 @@
+﻿web: STARLIGHT_PORT=$PORT npm start
