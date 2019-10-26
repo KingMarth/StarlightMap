@@ -1,4 +1,4 @@
-const Nightmare = require('nightmare');
+const Nightmare = require('puppeteer');
 const request = require('request');
 const fs = require('fs');
 
