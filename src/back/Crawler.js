@@ -1,4 +1,4 @@
-const Nightmare = require('puppeteer');
+const Nightmare = require('chromeless').Chromeless;
 const request = require('request');
 const fs = require('fs');
 
@@ -13,7 +13,7 @@ const STATUS_PAGE_URL = 'http://willsaveworldforgold.com/forum/viewtopic.php?f=1
  * @returns {Nightmare} The Nightmare instance
  */
 function getNightmare() {
-  return Nightmare({
+  return new Nightmare({
     gotoTimeout: 120000, // in ms
     executionTimeout: 120000, // in ms
   });
@@ -278,11 +278,7 @@ function refreshTurn(turn) {
       const MapUrl = document.querySelector(`#${id} .content > img`).src;
       return JSON.stringify(MapUrl);
     }, postid)
-    .run((error, result) => {
-      if (error) {
-        Logger.error(`Got an error with getting the page: ${error}`);
-        return;
-      }
+    .then((result) => {
       try {
         const jsonResult = JSON.parse(result);
         request(jsonResult).pipe(fs.createWriteStream('save/map.png'));
@@ -291,8 +287,12 @@ function refreshTurn(turn) {
         return;
       }
       Logger.info('Current turn update finished');
-    })
-    .end();
+    }).catch((error) => {
+      if (error) {
+        Logger.error(`Got an error with getting the page: ${error}`);
+        return;
+      }
+    });
 }
 
 function refresh() {
@@ -300,6 +300,11 @@ function refresh() {
   return getNightmare()
     .goto(STATUS_PAGE_URL)
     .wait('#p43933')
+    .evaluate(() => {
+      Array.from(document.querySelectorAll('span > a[href="#"]')).forEach((link) => {
+        link.click();
+      })
+    })
     .evaluate(() => {
       // ==== Type declaration ====
 
@@ -449,8 +454,7 @@ function refresh() {
 
       return JSON.stringify(StatusPost);
     })
-    .run((error, result) => {
-      if (error) Logger.error(`Got an error when crawling: ${error}`);
+    .then((result) => {
       const res = JSON.parse(result);
 
       res.Crafting.structures.map(structureTechParser);
@@ -472,7 +476,9 @@ function refresh() {
         Magic: MagicParser(res.Magic.content),
       })).save().then(() => Logger.info('Updated'));
     })
-    .end();
+    .catch((error) => {
+      if (error) Logger.error(`Got an error when crawling: ${error}`);
+    });
 }
 
 module.exports = {
