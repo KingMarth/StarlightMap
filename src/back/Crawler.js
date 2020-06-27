@@ -103,12 +103,13 @@ function structureTechParser(data) {
 
 function survivorParser(data) {
   const ConditionsRegex = /Conditions: *((?:\w*[, ]?)*)/
-  const ItemsRegex = /Items: *((?:\w*[, ]?)*)/
+  const ItemsRegex = /Items: *((?:[\w']*[, ]?)*)/
   const PosRegex = /Position: *(\d+), *(\d+)/
   const HealthRegex = /Health: *(\d+)\/(\d+)/
   const ProfessionRegex = /Profession: *(([\w?]*[, ]?)*)/
   const ClassRegex = /Class: *(([\w?]* ?)*)/
   const DescriptionRegex = /\d, ?(.+)$/
+  const FollowerRegex = /Follower: *(.+)$/
 
   const Inhabitants = new Array();
   const persoMatch = data.trim().split(/\n ?\n/)
@@ -130,6 +131,15 @@ function survivorParser(data) {
       const profession = inhabitant.match(ProfessionRegex)
       const survivorClass = inhabitant.match(ClassRegex)
       const curProfClass = details[1].match(DescriptionRegex)
+      const follower = inhabitant.match(FollowerRegex)
+
+      const inventory = [];
+      if (items) {
+        items[1].split(/, */).forEach(item => inventory.push(item));
+      }
+      if (follower) {
+        inventory.push(follower[1]);
+      }
 
       const jobs = [];
       if (profession) {
@@ -161,7 +171,7 @@ function survivorParser(data) {
         position ? position[2] : 0,
         health ? health[1] : 0,
         health ? health[2] : 0,
-        items ? items[1].split(/, */) : [],
+        inventory,
         conditions ? conditions[1].split(/, */) : [],
         jobs,
       ))
@@ -184,8 +194,8 @@ function survivorParser(data) {
 }
 
 function parseMultiItems(line) {
-  const ItemsRegex = /\d+ [\w *]+,?/g;
-  const ItemRegex = /(\d+) ([\w *]+)/;
+  const ItemsRegex = /\d+ [\w' *]+,?/g;
+  const ItemRegex = /(\d+) ([\w' *]+)/;
 
   const itemsMatch = line.match(ItemsRegex);
   if (!itemsMatch) return [];
